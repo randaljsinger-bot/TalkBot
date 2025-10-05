@@ -42,6 +42,9 @@ export class MemStorage implements IStorage {
       ...insertMessage,
       id,
       timestamp: new Date(),
+      inputMethod: insertMessage.inputMethod ?? 'text',
+      hasAudio: insertMessage.hasAudio ?? false,
+      audioUrl: insertMessage.audioUrl ?? null,
     };
     this.messages.set(id, message);
     return message;

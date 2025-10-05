@@ -282,7 +282,7 @@ export default function Chat() {
                 <label className="flex items-center gap-2 cursor-pointer hover:text-foreground transition-colors">
                   <Checkbox
                     checked={voiceResponses}
-                    onCheckedChange={setVoiceResponses}
+                    onCheckedChange={(checked) => setVoiceResponses(checked === true)}
                     data-testid="checkbox-voice-responses"
                   />
                   <span>Voice responses</span>
@@ -290,7 +290,7 @@ export default function Chat() {
                 <label className="flex items-center gap-2 cursor-pointer hover:text-foreground transition-colors">
                   <Checkbox
                     checked={autoSend}
-                    onCheckedChange={setAutoSend}
+                    onCheckedChange={(checked) => setAutoSend(checked === true)}
                     data-testid="checkbox-auto-send"
                   />
                   <span>Auto-send</span>
