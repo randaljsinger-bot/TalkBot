@@ -17,7 +17,8 @@ export function useWebSocket() {
 
   useEffect(() => {
  const protocol = "wss:";
-const wsUrl = `${protocol}//valariax-transmission.onrender.com/ws`;
+const wsUrl = "wss://valariax-transmission.onrender.com/ws";
+
 
     const ws = new WebSocket(wsUrl);
 
