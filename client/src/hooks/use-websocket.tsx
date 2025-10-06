@@ -1,8 +1,8 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useEffect, useState, useRef, useCallback } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface WebSocketMessage {
-  type: 'message' | 'chunk' | 'complete' | 'typing' | 'error';
+  type: "message" | "chunk" | "complete" | "typing" | "error";
   content?: string;
   message?: any;
   isTyping?: boolean;
@@ -13,12 +13,13 @@ export function useWebSocket() {
   const [isConnected, setIsConnected] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const { toast } = useToast();
-  const messageHandlersRef = useRef<((message: WebSocketMessage) => void)[]>([]);
+  const messageHandlersRef = useRef<((message: WebSocketMessage) => void)[]>(
+    [],
+  );
 
   useEffect(() => {
- const protocol = "wss:";
-const wsUrl = "wss://valariax-transmission.onrender.com/ws";
-
+    const protocol = "wss:";
+    const wsUrl = "wss://valariax-transmission.onrender.com/ws";
 
     const ws = new WebSocket(wsUrl);
 
@@ -30,10 +31,10 @@ const wsUrl = "wss://valariax-transmission.onrender.com/ws";
     ws.onmessage = (event) => {
       try {
         const message: WebSocketMessage = JSON.parse(event.data);
-        
-        if (message.type === 'typing') {
+
+        if (message.type === "typing") {
           setIsTyping(message.isTyping || false);
-        } else if (message.type === 'error') {
+        } else if (message.type === "error") {
           toast({
             title: "Error",
             description: message.content || "Something went wrong",
@@ -42,9 +43,9 @@ const wsUrl = "wss://valariax-transmission.onrender.com/ws";
         }
 
         // Notify all registered handlers
-        messageHandlersRef.current.forEach(handler => handler(message));
+        messageHandlersRef.current.forEach((handler) => handler(message));
       } catch (error) {
-        console.error('Failed to parse WebSocket message:', error);
+        console.error("Failed to parse WebSocket message:", error);
       }
     };
 
@@ -54,7 +55,7 @@ const wsUrl = "wss://valariax-transmission.onrender.com/ws";
     };
 
     ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
+      console.error("WebSocket error:", error);
       setIsConnected(false);
     };
 
@@ -63,18 +64,26 @@ const wsUrl = "wss://valariax-transmission.onrender.com/ws";
     };
   }, [toast]);
 
-  const sendMessage = useCallback((message: any) => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify(message));
-    }
-  }, [socket]);
+  const sendMessage = useCallback(
+    (message: any) => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify(message));
+      }
+    },
+    [socket],
+  );
 
-  const addMessageHandler = useCallback((handler: (message: WebSocketMessage) => void) => {
-    messageHandlersRef.current.push(handler);
-    return () => {
-      messageHandlersRef.current = messageHandlersRef.current.filter(h => h !== handler);
-    };
-  }, []);
+  const addMessageHandler = useCallback(
+    (handler: (message: WebSocketMessage) => void) => {
+      messageHandlersRef.current.push(handler);
+      return () => {
+        messageHandlersRef.current = messageHandlersRef.current.filter(
+          (h) => h !== handler,
+        );
+      };
+    },
+    [],
+  );
 
   return {
     isConnected,
