@@ -86,15 +86,23 @@ app.use((req, res, next) => {
   });
 
   // Accept upgrades only for /ws
-  server.on("upgrade", (req, socket, head) => {
-    if (req.url !== "/ws") {
-      socket.destroy();
-      return;
-    }
-    wss.handleUpgrade(req, socket, head, (ws) => {
-      wss.emit("connection", ws, req);
-    });
+  // Log to confirm upgrades hit the server
+server.on("upgrade", (req, socket, head) => {
+  const url = req.url || "";
+  if (!url.startsWith("/ws")) {
+    socket.destroy();
+    return;
+  }
+  wss.handleUpgrade(req, socket, head, (ws) => {
+    wss.emit("connection", ws, req);
   });
+});
+
+// Also log when a WS connection succeeds
+wss.on("connection", (ws) => {
+  console.log("WS client connected");
+});
+
   // --- end WebSocket setup ---
 
   server.listen(
