@@ -1,19 +1,22 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { WebSocketServer } from "ws";
 
 const app = express();
 
-declare module 'http' {
+declare module "http" {
   interface IncomingMessage {
-    rawBody: unknown
+    rawBody: unknown;
   }
 }
-app.use(express.json({
-  verify: (req, _res, buf) => {
-    req.rawBody = buf;
-  }
-}));
+app.use(
+  express.json({
+    verify: (req, _res, buf) => {
+      req.rawBody = buf;
+    },
+  }),
+);
 app.use(express.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {
@@ -65,21 +68,43 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
-// Root route for Render test
-app.get("/", (req, res) => {
-  res.send("ValariaX Transmission Server Active 🚀");
-});
+  // Root route for Render test
+  app.get("/", (req, res) => {
+    res.send("ValariaX Transmission Server Active 🚀");
+  });
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
+  const port = parseInt(process.env.PORT || "5000", 10);
+  // --- WebSocket setup (at /ws) ---
+  const wss = new WebSocketServer({ noServer: true });
+
+  wss.on("connection", (ws) => {
+    ws.send(JSON.stringify({ type: "connected" }));
   });
+
+  // Accept upgrades only for /ws
+  server.on("upgrade", (req, socket, head) => {
+    if (req.url !== "/ws") {
+      socket.destroy();
+      return;
+    }
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      wss.emit("connection", ws, req);
+    });
+  });
+  // --- end WebSocket setup ---
+
+  server.listen(
+    {
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+    },
+    () => {
+      log(`serving on port ${port}`);
+    },
+  );
 })();
